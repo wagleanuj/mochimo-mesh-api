@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
+	"os"
+	"path/filepath"
 	"github.com/NickP005/go_mcminterface"
 )
-
-const TXCLEANFILE_PATH = "mochimo/bin/d/txclean.dat"
 
 // MempoolTransactionRequest is utilized to retrieve a transaction from the mempool.
 type MempoolTransactionRequest struct {
@@ -38,7 +37,7 @@ func mempoolHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch transactions from the mempool
-	mempool, err := getMempool(TXCLEANFILE_PATH) // Replace with actual mempool path
+	mempool, err := getMempool(getTxcleanPath()) // Replace with actual mempool path
 	if err != nil {
 		fmt.Println("Error reading mempool", err)
 		giveError(w, ErrInternalError) // Internal error
@@ -85,7 +84,7 @@ func mempoolTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch transactions from the mempool
-	mempool, err := getMempool(TXCLEANFILE_PATH) // Replace with actual mempool path
+	mempool, err := getMempool(getTxcleanPath()) // Replace with actual mempool path
 	if err != nil {
 		fmt.Println("Error reading mempool", err)
 		giveError(w, ErrInternalError) // Internal error
@@ -118,4 +117,12 @@ func mempoolTransactionHandler(w http.ResponseWriter, r *http.Request) {
 	// Set headers and encode the response as JSON
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func getTxcleanPath() string {
+	nodeLocation := os.Getenv("MOCHIMO_NODE_LOCATION")
+	if nodeLocation == "" {
+		nodeLocation = "mochimo/bin/d" // default value if env var is not set
+	}
+	return filepath.Join(nodeLocation, "txclean.dat")
 }

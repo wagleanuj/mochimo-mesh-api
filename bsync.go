@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"log"
+	"os"
+	"path/filepath"
 	"sort"
 	"time"
 
@@ -12,7 +14,15 @@ import (
 
 const REFRESH_SYNC_INTERVAL = 10
 const SUGGESTED_FEE_PERC float32 = 0.25 // the percentile of the minimum fee
-const TFILE_PATH = "mochimo/bin/d/tfile.dat"
+//use env variable for this
+
+func getTfilePath() string {
+	nodeLocation := os.Getenv("MOCHIMO_NODE_LOCATION")
+	if nodeLocation == "" {
+		nodeLocation = "mochimo/bin/d" // default value if env var is not set
+	}
+	return filepath.Join(nodeLocation, "tfile.dat")
+}
 
 func Init() {
 	//randomly pick nodes and print
@@ -60,7 +70,7 @@ func Sync() bool {
 	Globals.GenesisBlockHash = first_trailer.Bhash
 
 	// Load the last 800 block hashes to block number map
-	blockmap, err := readBlockMap(800, TFILE_PATH)
+	blockmap, err := readBlockMap(800, getTfilePath())
 	if err != nil {
 		log.Default().Println("Sync() failed: Error reading block map")
 		return false
@@ -109,7 +119,7 @@ func RefreshSync() error {
 	Globals.CurrentBlockUnixMilli = uint64(binary.LittleEndian.Uint32(latest_trailer.Stime[:])) * 1000
 
 	// get the last 100 block hashes and add them to the block map
-	blockmap, error := readBlockMap(100, TFILE_PATH)
+	blockmap, error := readBlockMap(100, getTfilePath())
 	if error != nil {
 		log.Default().Println("Sync() failed: Error reading block map")
 		return error
@@ -120,7 +130,7 @@ func RefreshSync() error {
 
 	// get the last 60 minimum mining fees and set the suggested fee accordingly to SUGGESTED_FEE_PERC
 	minfees := make([]uint64, 0, 60)
-	minfee_map, error := readMinFeeMap(60, TFILE_PATH)
+	minfee_map, error := readMinFeeMap(60, getTfilePath())
 	if error != nil {
 		log.Default().Println("Sync() failed: Error reading minimum fee map")
 		return error
