@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 func corsMiddleware(next http.Handler) http.Handler {
@@ -33,6 +34,11 @@ func corsMiddleware(next http.Handler) http.Handler {
 
 func main() {
 	start_time := time.Now()
+		// Load .env file from project root
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	Init()
 
 	r := mux.NewRouter()
