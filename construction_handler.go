@@ -336,8 +336,15 @@ func constructionPayloadsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var send_total uint64 = 0
 	var change_total uint64 = 0
-	var source_total uint64 = req.Metadata["source_balance"].(uint64)
-
+	var source_total uint64
+	
+	if src_bal, ok := req.Metadata["source_balance"].(float64); ok {
+		source_total = uint64(src_bal)
+	} else {
+		fmt.Println("Invalid source_balance type")
+		giveError(w, ErrInvalidRequest)
+		return
+	}
 	// For every operation
 	for _, op := range req.Operations {
 		if op.Type == "DESTINATION_TRANSFER" {
@@ -382,8 +389,14 @@ func constructionPayloadsHandler(w http.ResponseWriter, r *http.Request) {
 	txentry.SetChangeTotal(change_total)
 
 	// Set block to live
-	block_to_live := req.Metadata["block_to_live"].(uint64)
-
+	var block_to_live uint64
+	if btl, ok := req.Metadata["block_to_live"].(float64); ok {
+		block_to_live = uint64(btl)
+	} else {
+		fmt.Println("Invalid block_to_live type")
+		giveError(w, ErrInvalidRequest)
+		return
+	}
 	txentry.SetBlockToLive(block_to_live)
 
 	//var pubSeedArray [32]byte
