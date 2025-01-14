@@ -465,7 +465,7 @@ func constructionCombineHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if len(req.Signatures[0].HexBytes) != 2144*2 {
+	if len(req.Signatures[0].HexBytes) != 2208*2 {
 		fmt.Print("Invalid signature length")
 		giveError(w, ErrInvalidRequest)
 		return
